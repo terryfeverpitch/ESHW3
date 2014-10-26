@@ -11,8 +11,11 @@ import com.example.ehsw3.UI.VolumeBar;
 import com.example.eshw3.R;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -133,6 +136,16 @@ public class EventHandler {
 	    		}
 	        }
 	        timeHandler.postDelayed(this, 500);
+	    }
+	};
+	
+	public static Handler volumeHandler = new Handler();
+	public static Runnable volume_runnable = new Runnable() {
+	    @Override
+	    public void run() {
+	    	ibtn_volume.setSelected(!ibtn_volume.isSelected());
+			volumeBar.setVisibility(View.INVISIBLE);
+			volumeHandler.removeCallbacks(volume_runnable);
 	    }
 	};
 	
@@ -257,9 +270,11 @@ public class EventHandler {
 					volumeBar.setVisibility(View.VISIBLE);
 					volumeBar.getLayoutParams().height = cover.getHeight() - btn_queue.getHeight();
 					volumeBar.getLayoutParams().width = ibtn_volume.getWidth();
-					volumeBar.setBackgroundColor(Color.parseColor("#00000000"));
+					volumeBar.setBackgroundColor(Color.parseColor("#55000000"));
 					volumeBar.setVolume(player.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
 					volumeBar.invalidate();
+					volumeHandler.removeCallbacks(volume_runnable);
+					volumeHandler.postDelayed(volume_runnable, 2500);
 				}
 				else {
 					volumeBar.setVisibility(View.INVISIBLE);

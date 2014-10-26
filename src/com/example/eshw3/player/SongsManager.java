@@ -21,9 +21,11 @@ public class SongsManager {
 	    if (MEDIA_PATH != null) {
 	        File home = new File(MEDIA_PATH);
 	        File[] listFiles = home.listFiles();
+	        Arrays.sort(listFiles);
 	        if (listFiles != null && listFiles.length > 0) {
 	            for (File file : listFiles) {
 	                if (file.isDirectory()) {
+	                	
 	                    scanDirectory(file);
 	                } else {
 	                    addSongToList(file);
@@ -38,8 +40,7 @@ public class SongsManager {
 	    if (directory != null) {
 	        File[] listFiles = directory.listFiles();
 	       
-	        if (listFiles != null && listFiles.length > 0) {
-	        	Arrays.sort(listFiles);
+	        if (listFiles != null && listFiles.length > 0) {  	
 	            for (File file : listFiles) {
 	                if (file.isDirectory()) {
 	                    scanDirectory(file);

@@ -1,5 +1,6 @@
 package com.example.ehsw3.UI;
 
+import com.example.eshw3.player.EventHandler;
 import com.example.eshw3.player.Player;
 
 import android.content.Context;
@@ -18,7 +19,6 @@ public class VolumeBar extends View implements View.OnTouchListener{
 	private AudioManager audioManager = null;
 	private int fontSize = 50;
 	private int horizontal;
-	private int percent = 0;
 	private int view_width, view_height;
 	private int maxVolume = 15, currentVolume = 3;
 	private boolean fromUser = false;
@@ -49,15 +49,20 @@ public class VolumeBar extends View implements View.OnTouchListener{
 		
 		paint.setColor(Color.parseColor("#000000"));
 	    canvas.drawText("15", 1, fontSize, paint);   
-	    canvas.drawText("0" + currentVolume, 1, view_height - 10, paint);
+	    canvas.drawText("0", 1, view_height - 10, paint);
 	    
 	    if(!fromUser){
-	    	horizontal =  view_height - this.currentVolume * (int)((float)view_height / (float)maxVolume);
+	    	horizontal =  view_height - (currentVolume * (int)((float)view_height / 15.0));
 	    }
 	    else {
-	    	currentVolume =  (int)(((float)(view_height - horizontal) / ((float)view_height / 15.0)));
+	    	currentVolume =  (int)((float)(view_height - horizontal) / ((float)view_height / 15.0));
 	    }
-
+	    
+	    if(currentVolume == 15)
+    		horizontal = 0;
+	    else if(currentVolume == 0)
+	    	horizontal = view_height;
+	    
     	canvas.drawLine(0, horizontal, view_width, horizontal, paint);
 	    
 	    if(horizontal <= view_height / 2) 
@@ -80,14 +85,17 @@ public class VolumeBar extends View implements View.OnTouchListener{
 			horizontal = clamp((int) event.getY());
 			fromUser = true;
 			invalidate();
+			EventHandler.volumeHandler.removeCallbacks(EventHandler.volume_runnable);
 		}
 		else if(event.getAction() == MotionEvent.ACTION_MOVE) {
 			horizontal = clamp((int) event.getY());
 			fromUser = true;
 			invalidate();
+			EventHandler.volumeHandler.removeCallbacks(EventHandler.volume_runnable);
 		}
 		else if(event.getAction() == MotionEvent.ACTION_UP) {
 			fromUser = false;
+			EventHandler.volumeHandler.postDelayed(EventHandler.volume_runnable, 2000);
 		}
 		
 		return true;

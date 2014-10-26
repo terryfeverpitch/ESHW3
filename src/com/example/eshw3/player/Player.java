@@ -8,6 +8,7 @@ import com.example.eshw3.R;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
@@ -43,7 +44,7 @@ public class Player extends MediaPlayer {
 		super();
 		audioManager = (AudioManager) parentActivity.getSystemService(Context.AUDIO_SERVICE);
 		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 3, 0);
-		
+
 		setOnCompletionListener(EventHandler.genPlayerCompletionListener());
 	}
 	// state and mode
