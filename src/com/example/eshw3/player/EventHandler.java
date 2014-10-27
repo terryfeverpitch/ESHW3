@@ -1,40 +1,28 @@
 package com.example.eshw3.player;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import com.example.ehsw3.UI.MainActivity;
 import com.example.ehsw3.UI.Playing;
 import com.example.ehsw3.UI.Queue;
 import com.example.ehsw3.UI.VolumeBar;
+import com.example.ehsw3.UI.MarqueeTextView;
 import com.example.eshw3.R;
 
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.MediaStore.Audio;
-import android.provider.MediaStore.Audio.Albums;
+import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,8 +32,8 @@ public class EventHandler {
 	private static MainActivity activity;
 	
 	private static SeekBar sb;
-	private static ImageButton ibtn_play, ibtn_next, ibtn_previous, ibtn_repeat, ibtn_shuffle, ibtn_volume;
-	private static Button btn_queue;
+	private static ImageButton ibtn_play, ibtn_next, ibtn_previous, ibtn_repeat, ibtn_shuffle, ibtn_volume, ibtn_arrow;
+	private static MarqueeTextView marqueeTextView;
 	private static TextView tv_time;
 	private static TextView tv_duration;
 	private static ListView queue_lv_list;
@@ -79,15 +67,26 @@ public class EventHandler {
 		}
 		else if(v.equals(Playing.rootView)) {
 			cover = (ImageView) Playing.rootView.findViewById(R.id.player_img_cover);
-			btn_queue = (Button) Playing.rootView.findViewById(R.id.player_btn_queue);
-			btn_queue.setOnClickListener(new View.OnClickListener() {
+			marqueeTextView = (MarqueeTextView) Playing.rootView.findViewById(R.id.player_view_marquee);
+			marqueeTextView.scrollText(20);
+			marqueeTextView.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					activity.getViewPager().setCurrentItem(0, true);
+					queue_lv_list.setSelection(player.getPlayerIndex());
 				}
 			});
 			
-			volumeBar.getLayoutParams().height = cover.getHeight() - btn_queue.getHeight();
+			ibtn_arrow = (ImageButton) Playing.rootView.findViewById(R.id.player_ibtn_arrow);
+			ibtn_arrow.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					activity.getViewPager().setCurrentItem(0, true);
+					queue_lv_list.setSelection(player.getPlayerIndex());
+				}
+			});
+
+			volumeBar.getLayoutParams().height = cover.getHeight() - marqueeTextView.getHeight();
 		}
 	}
 	
@@ -105,9 +104,6 @@ public class EventHandler {
 		
 		sb.setEnabled(false);
 		volumeBar.setVisibility(View.INVISIBLE);
-		
-		/*volumeBar.setMaxVolume(Player.audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-		volumeBar.getLayoutParams().width = ibtn_volume.getWidth();*/
 	}
 	
 	private static Handler timeHandler = new Handler();
@@ -143,19 +139,35 @@ public class EventHandler {
 	public static Runnable volume_runnable = new Runnable() {
 	    @Override
 	    public void run() {
-	    	ibtn_volume.setSelected(!ibtn_volume.isSelected());
+	    	ibtn_volume.setSelected(false);
 			volumeBar.setVisibility(View.INVISIBLE);
 			volumeHandler.removeCallbacks(volume_runnable);
 	    }
 	};
+	
+	public static ViewPager.OnPageChangeListener genPagerChangeListener() {
+		return new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrollStateChanged(int position) {
+				if(position == 0)
+					queue_lv_list.setSelection(player.getPlayerIndex());
+			}
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+			}
+
+			@Override
+			public void onPageSelected(int arg0) {
+			}
+		};
+	}
 	
 	public static AdapterView.OnItemClickListener genQueueHanlder() {
 		return new AdapterView.OnItemClickListener () {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				if(player.getPlayerState() != Player.OVER) {
-					ListView listView = (ListView) parent;		
+				if(player.getPlayerState() != Player.OVER) {	
 					player.setPlayerIndex(position);
 					player.setPlayerState(Player.CHANGING);
 				}
@@ -219,7 +231,7 @@ public class EventHandler {
 			@Override
 			public void onClick(View v) {		
 				ImageButton ibtn = (ImageButton) v;
-				String toast;
+				String toast = "";
 
 				if(ibtn.equals(ibtn_repeat)) {
 					int mode = player.getPlayerMode();
@@ -244,7 +256,7 @@ public class EventHandler {
 							break;		
 					}
 				}
-				else {
+				else if(ibtn.equals(ibtn_shuffle)){
 					ibtn.setSelected(!ibtn.isSelected());
 					if(ibtn.isSelected())  {
 						player.setShuffle(true);
@@ -255,6 +267,7 @@ public class EventHandler {
 						toast = "shuffle off"; 
 					}
 				}
+				
 				CustomToast.showToast(activity, toast, 500);
 			}
 		};
@@ -268,9 +281,9 @@ public class EventHandler {
 				
 				if(ibtn_volume.isSelected()) {
 					volumeBar.setVisibility(View.VISIBLE);
-					volumeBar.getLayoutParams().height = cover.getHeight() - btn_queue.getHeight();
+					volumeBar.getLayoutParams().height = cover.getHeight() - marqueeTextView.getHeight();
 					volumeBar.getLayoutParams().width = ibtn_volume.getWidth();
-					volumeBar.setBackgroundColor(Color.parseColor("#55000000"));
+					volumeBar.setBackgroundColor(Color.parseColor("#55FFFFFF"));
 					volumeBar.setVolume(player.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
 					volumeBar.invalidate();
 					volumeHandler.removeCallbacks(volume_runnable);
@@ -314,8 +327,6 @@ public class EventHandler {
 						player.seekTo(seekBar.getProgress());
 						tv_time.setText(player.getCurrentPositionString());
 					} catch (IllegalStateException  e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 				}
 			}
@@ -350,7 +361,6 @@ public class EventHandler {
 						player.setPlayerState(Player.INIT);
 					}
 		         } catch (Exception e) { 
-		           e.printStackTrace(); 
 		         }
 			}
 		};
@@ -363,7 +373,8 @@ public class EventHandler {
 		
 		updateCover(title + ".mp3");
 
-		btn_queue.setText((player.getPlayerIndex() + 1) + ". " + title);	
+		marqueeTextView.setText((player.getPlayerIndex() + 1) + ". " + title);	
+		marqueeTextView.scrollText(20);
 		ibtn_play.setImageResource(android.R.drawable.ic_media_pause);
 		tv_time.setVisibility(View.VISIBLE);
 		tv_duration.setVisibility(View.VISIBLE);
@@ -429,7 +440,7 @@ public class EventHandler {
 			if (toast != null)
 				toast.setText(text);
 			else
-				toast = toast.makeText(ctx, text, Toast.LENGTH_SHORT);
+				toast = Toast.makeText(ctx, text, Toast.LENGTH_SHORT);
 			toastHandler.postDelayed(toastRunnable, duration + 1000);
 			toast.show();
 		}

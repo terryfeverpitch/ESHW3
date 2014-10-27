@@ -11,11 +11,7 @@ public class SongsManager {
 	public String MEDIA_PATH = "/sdcard/Music"; // Environment.getExternalStorageDirectory().getPath() + 
 	private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 	private String mp3Pattern = ".mp3";
-	
-	public SongsManager() {
 
-	}
-	
 	public ArrayList<HashMap<String, String>> getPlayList() {
 	    System.out.println(MEDIA_PATH);
 	    if (MEDIA_PATH != null) {
@@ -59,7 +55,6 @@ public class SongsManager {
 	        songMap.put("songTitle",
 	                song.getName().substring(0, (song.getName().length() - 4)));
 	        songMap.put("songPath", song.getPath());
-
 	        songsList.add(songMap);
 	    }
 	}

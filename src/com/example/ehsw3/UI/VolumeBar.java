@@ -1,8 +1,7 @@
 package com.example.ehsw3.UI;
 
 import com.example.eshw3.player.EventHandler;
-import com.example.eshw3.player.Player;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,6 +22,7 @@ public class VolumeBar extends View implements View.OnTouchListener{
 	private int maxVolume = 15, currentVolume = 3;
 	private boolean fromUser = false;
 	
+	@SuppressLint("ClickableViewAccessibility")
 	public VolumeBar(Context context, AttributeSet attributeSet) {
 		super(context, attributeSet);
 		paint = new Paint();
@@ -31,21 +31,22 @@ public class VolumeBar extends View implements View.OnTouchListener{
 		paint.setTextAlign(Align.LEFT);
 		
 		horizontal = view_height = this.getHeight();
+		
 		setOnTouchListener(this);
 	}
 	
 	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec); 
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+		view_width  = w;
+		view_height = h;
 	}
 	
+	@SuppressLint("DrawAllocation")
 	@Override
     protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas); 
 		
 		canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
-		view_width  = this.getWidth();
-		view_height = this.getHeight();
 		
 		paint.setColor(Color.parseColor("#000000"));
 	    canvas.drawText("15", 1, fontSize, paint);   
@@ -73,12 +74,11 @@ public class VolumeBar extends View implements View.OnTouchListener{
 	    paint.setColor(Color.parseColor("#55AA0000"));
 	    canvas.drawRect(0, horizontal, view_width, view_height, paint);
 
-	    
-	    //currentVolumef6fu
 	    if(audioManager != null)
 	    	audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, currentVolume, 0);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if(event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -95,6 +95,7 @@ public class VolumeBar extends View implements View.OnTouchListener{
 		}
 		else if(event.getAction() == MotionEvent.ACTION_UP) {
 			fromUser = false;
+			EventHandler.volumeHandler.removeCallbacks(EventHandler.volume_runnable);
 			EventHandler.volumeHandler.postDelayed(EventHandler.volume_runnable, 2000);
 		}
 		
