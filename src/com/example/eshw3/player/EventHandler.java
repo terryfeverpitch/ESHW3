@@ -2,12 +2,13 @@ package com.example.eshw3.player;
 
 import java.io.File;
 
-import com.example.ehsw3.UI.MainActivity;
-import com.example.ehsw3.UI.Playing;
-import com.example.ehsw3.UI.Queue;
-import com.example.ehsw3.UI.VolumeBar;
-import com.example.ehsw3.UI.MarqueeTextView;
 import com.example.eshw3.R;
+import com.example.eshw3.UI.CustomSeekBar;
+import com.example.eshw3.UI.MainActivity;
+import com.example.eshw3.UI.MarqueeTextView;
+import com.example.eshw3.UI.Playing;
+import com.example.eshw3.UI.Queue;
+import com.example.eshw3.UI.VolumeBar;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -28,17 +29,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EventHandler {
-	private static Player player;
+	public static Player player;
 	private static MainActivity activity;
 	
-	private static SeekBar sb;
-	private static ImageButton ibtn_play, ibtn_next, ibtn_previous, ibtn_repeat, ibtn_shuffle, ibtn_volume, ibtn_arrow;
+	//private static SeekBar sb;
+	public static ImageButton ibtn_play, ibtn_next, ibtn_previous, ibtn_repeat, ibtn_shuffle, ibtn_volume, ibtn_arrow;
 	private static MarqueeTextView marqueeTextView;
-	private static TextView tv_time;
-	private static TextView tv_duration;
+	//private static TextView tv_time;
+	//private static TextView tv_duration;
 	private static ListView queue_lv_list;
 	private static ImageView cover;
 	private static VolumeBar volumeBar;
+	private static CustomSeekBar seekbar;
 	
 	public EventHandler(MainActivity a, Player p) {
 		setPlayer(p);
@@ -62,7 +64,8 @@ public class EventHandler {
 	        	ibtn_next.setEnabled(false);
 	        	ibtn_previous.setEnabled(false);
 	        	ibtn_volume.setEnabled(false);
-	        	sb.setEnabled(false);
+	        	seekbar.setEnabled(false);
+	        	//sb.setEnabled(false);
 	        }
 		}
 		else if(v.equals(Playing.rootView)) {
@@ -91,9 +94,9 @@ public class EventHandler {
 	}
 	
 	public static void setComponent() {
-		sb            = (SeekBar) activity.findViewById(R.id.player_sb_timeline);
-		tv_time       = (TextView) activity.findViewById(R.id.player_tv_time);
-		tv_duration   = (TextView) activity.findViewById(R.id.player_tv_duration);
+		//sb            = (SeekBar) activity.findViewById(R.id.player_sb_timeline);
+		//tv_time       = (TextView) activity.findViewById(R.id.player_tv_time);
+		//tv_duration   = (TextView) activity.findViewById(R.id.player_tv_duration);
 		ibtn_play     = (ImageButton) activity.findViewById(R.id.player_ibtn_play);
 		ibtn_next     = (ImageButton) activity.findViewById(R.id.player_ibtn_next);
         ibtn_previous = (ImageButton) activity.findViewById(R.id.player_ibtn_previous);
@@ -101,35 +104,42 @@ public class EventHandler {
 		ibtn_shuffle  = (ImageButton) activity.findViewById(R.id.player_ibtn_shuffle);
 		ibtn_volume   = (ImageButton) activity.findViewById(R.id.player_ibtn_volume);
 		volumeBar	  = (VolumeBar) activity.findViewById(R.id.player_view_volume);
-		
-		sb.setEnabled(false);
+		seekbar		  = (CustomSeekBar) activity.findViewById(R.id.player_view_timeline);
+		//sb.setEnabled(false);
+		seekbar.setEnabled(false);
 		volumeBar.setVisibility(View.INVISIBLE);
 	}
 	
-	private static Handler timeHandler = new Handler();
-	private static Runnable seekbar_runnable = new Runnable() {
+	public static Handler seekBarHandler = new Handler(); 
+	public static Runnable seekbar_runnable = new Runnable() {
 	    @Override
 	    public void run() {
 	        if(player != null){        
-	        	tv_time.setText(player.getCurrentPositionString());
-	    		sb.setProgress(player.getCurrentPosition());
+	        	//tv_time.setText(player.getCurrentPositionString());
+	        	//seekbar.setCurrentTimeText(player.getCurrentPositionString());
+	        	//seekbar.setTime(player.getCurrentPosition());
+	    		//sb.setProgress(player.getCurrentPosition());
+	        	seekbar.invalidate();
 	        }
-	        sb.postDelayed(this, 500);
+	        
+	        //sb.postDelayed(this, 500);
+	        seekBarHandler.postDelayed(this, 500);
 	    }
 	};
 	
+	private static Handler timeHandler = new Handler();
 	private static Runnable pause_runnable = new Runnable() {
 	    @Override
 	    public void run() {
 	        if(player != null){        
-	    		if(tv_time.getVisibility() == View.INVISIBLE) {
+	    		/*if(tv_time.getVisibility() == View.INVISIBLE) {
 	    			tv_time.setVisibility(View.VISIBLE);
 	    			tv_duration.setVisibility(View.VISIBLE);
 	    		}
 	    		else {
 	    			tv_time.setVisibility(View.INVISIBLE);
 	    			tv_duration.setVisibility(View.INVISIBLE);
-	    		}
+	    		}*/
 	        }
 	        timeHandler.postDelayed(this, 500);
 	    }
@@ -187,7 +197,8 @@ public class EventHandler {
 				else if(player.getPlayerState() == Player.PLAYING) {
 					player.setPlayerState(Player.PAUSE);
 					player.pause();
-					sb.removeCallbacks(seekbar_runnable);
+					seekBarHandler.removeCallbacks(seekbar_runnable);
+					//sb.removeCallbacks(seekbar_runnable);
 					timeHandler.removeCallbacks(pause_runnable);
 					timeHandler.post(pause_runnable);
 					ibtn_play.setImageResource(android.R.drawable.ic_media_play);
@@ -303,7 +314,7 @@ public class EventHandler {
 					boolean fromUser) {
 				if(fromUser) {
 					player.seekTo(progress);
-					tv_time.setText(player.getCurrentPositionString());
+					//tv_time.setText(player.getCurrentPositionString());
 				}
 			}
 
@@ -325,7 +336,7 @@ public class EventHandler {
 					try {
 						player.setPlayerState(Player.OVER);
 						player.seekTo(seekBar.getProgress());
-						tv_time.setText(player.getCurrentPositionString());
+						//tv_time.setText(player.getCurrentPositionString());
 					} catch (IllegalStateException  e) {
 					}
 				}
@@ -355,9 +366,11 @@ public class EventHandler {
 					else {
 						ibtn_play.setImageResource(android.R.drawable.ic_media_play);
 						timeHandler.removeCallbacks(pause_runnable);
-						sb.removeCallbacks(seekbar_runnable);
-						sb.setProgress(player.getDuration());
-						tv_time.setText(player.getDurationString());
+						seekBarHandler.removeCallbacks(seekbar_runnable);
+						//sb.removeCallbacks(seekbar_runnable);
+						//seekbar.setDurationText(player.getDurationString());
+						//sb.setProgress(player.getDuration());
+						//tv_time.setText(player.getDurationString());
 						player.setPlayerState(Player.INIT);
 					}
 		         } catch (Exception e) { 
@@ -376,14 +389,17 @@ public class EventHandler {
 		marqueeTextView.setText((player.getPlayerIndex() + 1) + ". " + title);	
 		marqueeTextView.scrollText(20);
 		ibtn_play.setImageResource(android.R.drawable.ic_media_pause);
-		tv_time.setVisibility(View.VISIBLE);
-		tv_duration.setVisibility(View.VISIBLE);
-		tv_duration.setText(player.getDurationString());
-		timeHandler.removeCallbacks(pause_runnable);	
-		sb.setMax(player.getDuration());
-		sb.removeCallbacks(seekbar_runnable);
-		sb.post(seekbar_runnable);
-
+		//tv_time.setVisibility(View.VISIBLE);
+		//tv_duration.setVisibility(View.VISIBLE);
+		seekbar.setDurationText(player.getDurationString());
+		//tv_duration.setText(player.getDurationString());
+		timeHandler.removeCallbacks(pause_runnable);
+		seekbar.setDuration(player.getDuration());
+		//sb.setMax(player.getDuration());
+		seekBarHandler.removeCallbacks(seekbar_runnable);
+		seekBarHandler.post(seekbar_runnable);
+		//sb.removeCallbacks(seekbar_runnable);
+		//sb.post(seekbar_runnable);
 		CustomToast.showToast(activity, "Play : \"" + title + "\"", 500);
 	}
 	
